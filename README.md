@@ -11,6 +11,12 @@
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Standards](https://img.shields.io/badge/ΕΛΠ_ν._4308/2014-myDATA_Compliant-emerald.svg)](#)
 
+<br/><br/>
+
+<img src="docs/dashboard-preview.jpg" alt="Olympus Sport Hellas Executive Dashboard Preview" width="100%" style="border-radius: 14px; box-shadow: 0 12px 35px rgba(0,0,0,0.6);" />
+
+<br/>
+
 **Ολοκληρωμένο Σύστημα Ανάλυσης Πωλήσεων, Δεικτών Απόδοσης (29 KPIs) & Αρχιτεκτονικής Star Schema**  
 *Ειδικά σχεδιασμένο για εισαγωγικές & εμπορικές επιχειρήσεις B2B (χονδρική σε dojo, σχολές πολεμικών τεχνών, resellers, ομοσπονδίες) και B2C (καταστήματα λιανικής & e-shop).*
 

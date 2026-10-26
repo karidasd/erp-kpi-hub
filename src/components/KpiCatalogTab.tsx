@@ -4,7 +4,8 @@ import {
   Search, 
   Filter, 
   Star, 
-  ArrowRight
+  ArrowRight,
+  RotateCcw
 } from 'lucide-react';
 
 interface KpiCatalogTabProps {
@@ -26,6 +27,21 @@ export const KpiCatalogTab: React.FC<KpiCatalogTabProps> = ({ onSelectKpi }) => 
     'Export από ERP + Excel/Power BI', 
     'Χρειάζεται δεδομένα εκτός ERP'
   ];
+
+  const isFiltered = 
+    searchQuery.trim() !== '' || 
+    selectedCategory !== 'Όλες' || 
+    selectedAudience !== 'Όλα' || 
+    onlyCore || 
+    selectedStatus !== 'Όλα';
+
+  const resetAllFilters = () => {
+    setSearchQuery('');
+    setSelectedCategory('Όλες');
+    setSelectedAudience('Όλα');
+    setOnlyCore(false);
+    setSelectedStatus('Όλα');
+  };
 
   const filteredKpis = useMemo(() => {
     return KPIS_DATA.filter((kpi) => {
@@ -57,18 +73,32 @@ export const KpiCatalogTab: React.FC<KpiCatalogTabProps> = ({ onSelectKpi }) => 
           </p>
         </div>
 
-        {/* Core Filter Switch */}
-        <button
-          onClick={() => setOnlyCore(!onlyCore)}
-          className={`flex items-center space-x-2 px-3 py-2 rounded-xl text-xs font-semibold transition border ${
-            onlyCore 
-              ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md shadow-amber-950/40' 
-              : 'bg-slate-800/80 text-slate-300 border-slate-700 hover:bg-slate-700'
-          }`}
-        >
-          <Star className={`w-4 h-4 ${onlyCore ? 'fill-current' : 'text-amber-400'}`} />
-          <span>Μόνο οι 7 Βασικοί Δείκτες</span>
-        </button>
+        {/* Action buttons */}
+        <div className="flex items-center space-x-2">
+          {isFiltered && (
+            <button
+              onClick={resetAllFilters}
+              className="flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-medium text-rose-400 hover:text-white bg-slate-800/80 hover:bg-slate-700 border border-slate-700 transition"
+              title="Επαναφορά όλων των φίλτρων"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Καθαρισμός Φίλτρων</span>
+            </button>
+          )}
+
+          {/* Core Filter Switch */}
+          <button
+            onClick={() => setOnlyCore(!onlyCore)}
+            className={`flex items-center space-x-2 px-3 py-2 rounded-xl text-xs font-semibold transition border ${
+              onlyCore 
+                ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md shadow-amber-950/40' 
+                : 'bg-slate-800/80 text-slate-300 border-slate-700 hover:bg-slate-700'
+            }`}
+          >
+            <Star className={`w-4 h-4 ${onlyCore ? 'fill-current' : 'text-amber-400'}`} />
+            <span>Μόνο οι 7 Βασικοί Δείκτες</span>
+          </button>
+        </div>
       </div>
 
       {/* Search and Filters Bar */}
@@ -96,7 +126,7 @@ export const KpiCatalogTab: React.FC<KpiCatalogTabProps> = ({ onSelectKpi }) => 
               onClick={() => setSelectedCategory(cat)}
               className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition ${
                 selectedCategory === cat
-                  ? 'bg-rose-600 text-white'
+                  ? 'bg-rose-600 text-white shadow-sm shadow-rose-950'
                   : 'bg-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-700'
               }`}
             >
@@ -117,7 +147,7 @@ export const KpiCatalogTab: React.FC<KpiCatalogTabProps> = ({ onSelectKpi }) => 
                   onClick={() => setSelectedAudience(aud)}
                   className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition ${
                     selectedAudience === aud
-                      ? 'bg-slate-700 text-white'
+                      ? 'bg-slate-700 text-white font-semibold'
                       : 'text-slate-400 hover:text-slate-200'
                   }`}
                 >
@@ -143,10 +173,17 @@ export const KpiCatalogTab: React.FC<KpiCatalogTabProps> = ({ onSelectKpi }) => 
         </div>
       </div>
 
-      {/* Results Count */}
+      {/* Results Count & Filter Status */}
       <div className="flex items-center justify-between text-xs text-slate-400 px-1">
-        <span>Βρέθηκαν <strong>{filteredKpis.length}</strong> από τους 29 δείκτες</span>
-        {onlyCore && <span className="text-amber-400 font-medium">Φιλτράρισμα: Προβολή 7 Βασικών Δεικτών</span>}
+        <div className="flex items-center space-x-2">
+          <span>Βρέθηκαν <strong>{filteredKpis.length}</strong> από τους 29 δείκτες</span>
+          {isFiltered && (
+            <span className="px-2 py-0.5 rounded-full bg-slate-800 text-[10px] text-rose-400 border border-slate-700">
+              Ενεργά Φίλτρα
+            </span>
+          )}
+        </div>
+        {onlyCore && <span className="text-amber-400 font-medium">Προβολή 7 Βασικών Δεικτών</span>}
       </div>
 
       {/* KPI Cards Grid */}

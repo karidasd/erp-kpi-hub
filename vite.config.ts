@@ -8,5 +8,5 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
-  base: './', // Ensures assets load correctly on GitHub Pages
+  base: '/erp-kpi-hub/', // Exact repository base for GitHub Pages
 })

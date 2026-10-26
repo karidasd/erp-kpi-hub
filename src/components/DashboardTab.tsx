@@ -31,18 +31,20 @@ import {
 interface DashboardTabProps {
   onOpenKpiModal: (kpiId: number) => void;
   onNavigateToCalculators: () => void;
+  onOpenReport?: () => void;
 }
 
 export const DashboardTab: React.FC<DashboardTabProps> = ({ 
   onOpenKpiModal,
-  onNavigateToCalculators 
+  onNavigateToCalculators,
+  onOpenReport
 }) => {
   const summary = MOCK_EXECUTIVE_SUMMARY;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       {/* Top Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-rose-950/30 to-slate-900 border border-rose-900/30 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+      <div className="bg-gradient-to-r from-slate-900 via-rose-950/30 to-slate-900 border border-rose-900/30 rounded-2xl p-6 shadow-xl relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="max-w-3xl space-y-2 relative z-10">
           <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs font-semibold">
             <span>Olympus Sport Hellas · Εμπορικό Μοντέλο</span>
@@ -55,6 +57,15 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
             Όλα τα ποσά υπολογίζονται σε <strong>καθαρή βάση (χωρίς ΦΠΑ)</strong> και <strong>Landed Cost</strong> κατά τα ΕΛΠ.
           </p>
         </div>
+
+        {onOpenReport && (
+          <button
+            onClick={onOpenReport}
+            className="self-start md:self-center shrink-0 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-lg shadow-rose-950 transition flex items-center space-x-2"
+          >
+            <span>Εξαγωγή Αναφοράς Διοίκησης (PDF)</span>
+          </button>
+        )}
       </div>
 
       {/* 7 Core KPI Cards */}

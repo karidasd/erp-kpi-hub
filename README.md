@@ -40,9 +40,10 @@
    - [Πλάνο Υλοποίησης 12 Εβδομάδων](#πλάνο-υλοποίησης-12-εβδομάδων)
    - [Data Health Check (Έλεγχος Ποιότητας Δεδομένων)](#data-health-check-έλεγχος-ποιότητας-δεδομένων)
    - [Ερωτήσεις προς την Εταιρεία του ERP (Exelixis)](#οι-6-τεχνικές-ερωτήσεις-προς-την-exelixis)
-6. [🧮 Live Προσομοιωτές στην Εφαρμογή](#-live-προσομοιωτές-στην-εφαρμογή)
-7. [Βιβλιογραφία & Πηγές Εμβάθυνσης](#-βιβλιογραφία--πηγές-εμβάθυνσης)
-8. [Οδηγός Εγκατάστασης & Εκτέλεσης](#-οδηγός-εγκατάστασης--εκτέλεσης)
+6. [🔌 Plugin Architecture & Ενσωμάτωση σε Άλλες Εφαρμογές](#-plugin-architecture--ενσωμάτωση-σε-άλλες-εφαρμογές)
+7. [🧮 Live Προσομοιωτές στην Εφαρμογή](#-live-προσομοιωτές-στην-εφαρμογή)
+8. [Βιβλιογραφία & Πηγές Εμβάθυνσης](#-βιβλιογραφία--πηγές-εμβάθυνσης)
+9. [Οδηγός Εγκατάστασης & Εκτέλεσης](#-οδηγός-εγκατάστασης--εκτέλεσης)
 
 ---
 
@@ -290,6 +291,87 @@ flowchart LR
 4. Υπάρχει αναφορά ενηλικίωσης απαιτήσεων με βάση την ημερομηνία λήξης;
 5. Κρατά το σύστημα ιστορικό αξίας αποθέματος ανά μήνα, ή μόνο την τρέχουσα εικόνα;
 6. Υποστηρίζει παραστατικά προσφοράς και παραγγελίας πελάτη με μετασχηματισμό σε τιμολόγιο;
+
+---
+
+## 🔌 Plugin Architecture & Ενσωμάτωση σε Άλλες Εφαρμογές
+
+Η εφαρμογή σχεδιάστηκε εξαρχής με **αρθρωτή αρχιτεκτονική (modular plugin architecture)**, ώστε ο μαθητής σας ή οποιοσδήποτε προγραμματιστής να μπορεί να ενσωματώσει τον μηχανισμό υπολογισμών σε οποιαδήποτε άλλη εφαρμογή (React, Vue, Angular, Node.js backend, ERP portal ή CRM):
+
+### 1. Αυτόνομη Βιβλιοθήκη Υπολογισμών (Core SDK)
+Όλοι οι μαθηματικοί και λογιστικοί υπολογισμοί βρίσκονται απομονωμένοι στον φάκελο [`src/core/kpiEngine.ts`](src/core/kpiEngine.ts) ως pure functions χωρίς καμία εξάρτηση από το React ή γραφικά στοιχεία.
+
+```typescript
+import { 
+  calculatePVM, 
+  calculateLandedCost, 
+  calculateGrossMargin, 
+  calculateDSO, 
+  evaluateSilentChurn,
+  calculateSafetyStockAndROP 
+} from './src/core/kpiEngine';
+
+// 1. Υπολογισμός Landed Cost (ΕΛΠ) & Gross Margin %
+const landedCost = calculateLandedCost(20, 25); // 20€ CIF + 25% έξοδα = 25.00€
+const margin = calculateGrossMargin(45, landedCost); // 44.44%
+
+// 2. Έλεγχος Σιωπηλής Αποχώρησης Πελάτη (Silent Churn)
+const alert = evaluateSilentChurn(75, 40); // 75 μέρες αποχής / 40 μέρες κύκλος
+console.log(alert.status); // "At Risk" (Δείκτης 1.88x)
+console.log(alert.actionGreek); // "Σε κίνδυνο: Άμεση τηλεφωνική επικοινωνία από πωλητή"
+
+// 3. PVM Decomposition Waterfall
+const pvm = calculatePVM([
+  { code: 'GLV-10', p0: 40, q0: 100, p1: 42, q1: 80 },
+  { code: 'BAND-4M', p0: 5, q0: 100, p1: 5, q1: 160 }
+]);
+console.log(pvm.mixEffect); // -1400€ (Στροφή σε φθηνότερα είδη)
+console.log(pvm.reconciliationCheck); // true (Απόλυτος έλεγχος συμφωνίας)
+```
+
+---
+
+### 2. Embeddable Widget / IFrame Mode (Ενσωμάτωση με 1 Γραμμή Κώδικα)
+Η εφαρμογή υποστηρίζει **ειδικό Embed Mode** μέσω URL parameters. Όταν καλείται με `?embed=true`, αφαιρούνται αυτόματα το header και το footer και προβάλλεται καθαρά το ζητούμενο widget:
+
+```html
+<!-- Ενσωμάτωση των Live Προσομοιωτών σε εξωτερικό CRM / ERP -->
+<iframe 
+  src="https://karidasd.github.io/erp-kpi-hub/?embed=true&tab=calculators" 
+  width="100%" 
+  height="750px" 
+  frameborder="0"
+  style="border-radius: 12px; border: 1px solid #334155;">
+</iframe>
+```
+
+* **Παράμετροι URL:**
+  * `?embed=true`: Αποκρύπτει πλοήγηση και υποσέλιδο.
+  * `&tab=dashboard`: Προβάλλει απευθείας το Executive Dashboard.
+  * `&tab=calculators`: Προβάλλει απευθείας τους 5 live υπολογιστές.
+  * `&tab=catalog`: Προβάλλει τον διαδραστικό κατάλογο των 29 δεικτών.
+
+---
+
+### 3. Exelixis ERP Data Adapter & Normalizer
+Στο αρχείο [`src/core/exelixisAdapter.ts`](src/core/exelixisAdapter.ts) περιλαμβάνεται κανονικοποιητής (adapter) που διαβάζει τα ελληνικά exports του ERP (Exelixis, SoftOne, Entersoft) και τα μετατρέπει αυτόματα στο Star Schema:
+* Αυτόματη αναγνώριση στηλών στα ελληνικά (*«Καθαρή Αξία», «Κόστος Γραμμής», «Επωνυμία», «ΑΦΜ»* κ.λπ.).
+* Αυτόματος υπολογισμός καθαρών ποσών χωρίς ΦΠΑ.
+* Εντοπισμός ελλείψεων σε Landed Cost και επιστροφή τεχνικών προειδοποιήσεων (warnings).
+
+---
+
+### 4. Εξαγωγή Επίσημης Αναφοράς Διοίκησης σε PDF (1-Click Management Brief)
+Στην εφαρμογή υπάρχει ενσωματωμένο σύστημα έκδοσης **Executive Report**:
+* Πατώντας το κουμπί **«Αναφορά PDF»** ανοίγει ένα καθαρό, εκτυπώσιμο 2σέλιδο δελτίο διοίκησης.
+* Έτοιμο για απευθείας εκτύπωση ή αποθήκευση σε PDF (`window.print()`) με ειδικό print stylesheet (λευκό φόντο, μαύρα γράμματα, εταιρικό επιστολόχαρτο, πίνακας 7 Core KPIs, ανάλυση επιταγών/DSO και λίστα πελατών σε κίνδυνο).
+
+---
+
+### 5. Machine-Readable Open Data Dictionary (`/kpis.json`)
+Όλοι οι 29 δείκτες, οι μαθηματικοί τους τύποι, οι κανόνες ΕΛΠ και τα standards υλοποίησης διατίθενται ως ανοιχτό JSON endpoint:
+* **Διαδρομή:** [`public/kpis.json`](public/kpis.json)
+* Επιτρέπει σε τρίτες εφαρμογές, mobile apps ή AI agents να αντλούν δυναμικά το επίσημο λεξικό ορισμών (Data Dictionary).
 
 ---
 
